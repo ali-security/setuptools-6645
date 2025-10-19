@@ -235,7 +235,7 @@ class TestPackageIndex:
             'https://github.example/group/project',
             str(expected_dir),
         ])
-        fake_process.register_subprocess(['git', '-C', str(expected_dir)), 'checkout', '--quiet', 'master'])
+        fake_process.register_subprocess(['git', '-C', str(expected_dir), 'checkout', '--quiet', 'master'])
         result = index.download(url, tmp_path)
 
         assert result == str(expected_dir)
