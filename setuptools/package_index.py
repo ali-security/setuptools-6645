@@ -807,6 +807,10 @@ class PackageIndex(Environment):
 
         filename = os.path.join(tmpdir, name)
 
+        # ensure path resolves within the tmpdir
+        if not filename.startswith(str(tmpdir)):
+            raise ValueError("Invalid filename %s" % filename)
+
         # Download the file
         #
         if scheme == 'svn' or scheme.startswith('svn+'):
