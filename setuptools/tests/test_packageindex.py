@@ -223,6 +223,52 @@ class TestPackageIndex:
             assert dists[0].version == ''
             assert dists[1].version == vc
 
+    def test_download_git_with_rev(self, tmp_path, fake_process):
+        url = 'git+https://github.example/group/project@master#egg=foo'
+        index = setuptools.package_index.PackageIndex()
+
+        expected_dir = tmp_path / 'project@master'
+        fake_process.register_subprocess([
+            'git',
+            'clone',
+            '--quiet',
+            'https://github.example/group/project',
+            str(expected_dir),
+        ])
+        fake_process.register_subprocess(['git', '-C', str(expected_dir)), 'checkout', '--quiet', 'master'])
+        result = index.download(url, tmp_path)
+
+        assert result == str(expected_dir)
+        assert len(fake_process.calls) == 2
+
+    def test_download_git_no_rev(self, tmp_path, fake_process):
+        url = 'git+https://github.example/group/project#egg=foo'
+        index = setuptools.package_index.PackageIndex()
+
+        expected_dir = tmp_path / 'project'
+        fake_process.register_subprocess([
+            'git',
+            'clone',
+            '--quiet',
+            'https://github.example/group/project',
+            str(expected_dir),
+        ])
+        index.download(url, tmp_path)
+
+    def test_download_svn(self, tmp_path, fake_process):
+        url = 'svn+https://svn.example/project#egg=foo'
+        index = setuptools.package_index.PackageIndex()
+
+        expected_dir = tmp_path / 'project'
+        fake_process.register_subprocess([
+            'svn',
+            'checkout',
+            '-q',
+            'svn+https://svn.example/project',
+            str(expected_dir),
+        ])
+        with pytest.warns(UserWarning):
+            index.download(url, tmp_path)
 
 class TestContentCheckers:
     def test_md5(self):
